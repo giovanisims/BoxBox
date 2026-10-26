@@ -1,0 +1,121 @@
+import { StyleSheet } from 'react-native';
+import { COLORS } from '../theme/constants';
+
+export const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    flex: 1,
+    maxWidth: 480,
+    zIndex: 1000,
+  },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  inputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#fafafa',
+    minHeight: 38,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    paddingVertical: 6,
+    marginLeft: 6,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  searchButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    minHeight: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 44,
+    left: 0,
+    right: 0,
+    maxHeight: 360,
+    backgroundColor: COLORS.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    overflow: 'hidden',
+  },
+  dropdownLoading: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  dropdownLoadingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  dropdownEmpty: {
+    padding: 18,
+    alignItems: 'center',
+  },
+  dropdownEmptyText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    minHeight: 54,
+  },
+  dropdownAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#eeeeee',
+    marginRight: 10,
+  },
+  dropdownAvatarPlaceholder: {
+    backgroundColor: '#333333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dropdownItemInfo: {
+    flex: 1,
+  },
+  dropdownItemName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+  },
+  dropdownItemMeta: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+});

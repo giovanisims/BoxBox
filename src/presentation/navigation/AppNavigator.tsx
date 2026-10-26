@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../../application/hooks/useAuth';
-import { defaultHeaderOptions, HeaderRight } from '../components/Header';
+import { AppHeader, defaultHeaderOptions } from '../components/Header';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { CatalogScreen } from '../screens/CatalogScreen';
 import { DetailsScreen } from '../screens/DetailsScreen';
@@ -33,36 +33,16 @@ export function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={defaultHeaderOptions}>
         {session?.isAuthenticated ? (
-          <>
-            <Stack.Screen
-              name="Catalog"
-              component={CatalogScreen}
-              options={{
-                headerRight: () => <HeaderRight />,
-              }}
-            />
-            <Stack.Screen
-              name="Details"
-              component={DetailsScreen}
-              options={{
-                headerRight: () => <HeaderRight />,
-              }}
-            />
-            <Stack.Screen
-              name="Favorites"
-              component={FavoritesScreen}
-              options={{
-                headerRight: () => <HeaderRight />,
-              }}
-            />
-            <Stack.Screen
-              name="Watched"
-              component={WatchedScreen}
-              options={{
-                headerRight: () => <HeaderRight />,
-              }}
-            />
-          </>
+          <Stack.Group
+            screenOptions={{
+              header: (props) => <AppHeader {...props} />,
+            }}
+          >
+            <Stack.Screen name="Catalog" component={CatalogScreen} />
+            <Stack.Screen name="Details" component={DetailsScreen} />
+            <Stack.Screen name="Favorites" component={FavoritesScreen} />
+            <Stack.Screen name="Watched" component={WatchedScreen} />
+          </Stack.Group>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />

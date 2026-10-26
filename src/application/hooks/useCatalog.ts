@@ -38,8 +38,7 @@ export function useCatalog() {
 
       setDrivers((previous) => (replace ? newDrivers : [...previous, ...newDrivers]));
       offsetRef.current = targetOffset + newDrivers.length;
-    } catch (err) {
-      console.error('[useCatalog] Error in fetchPage:', err);
+    } catch {
       setError('Failed to load drivers. Please check your connection.');
     } finally {
       isFetchingRef.current = false;

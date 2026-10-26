@@ -7,11 +7,30 @@ export const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 20,
   },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: COLORS.background,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    gap: 16,
+    zIndex: 1000,
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  backButton: {
+    padding: 4,
+  },
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginRight: 16,
+    gap: 10,
   },
   navButton: {
     flexDirection: 'row',
