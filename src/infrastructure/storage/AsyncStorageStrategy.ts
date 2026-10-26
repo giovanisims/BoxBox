@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IStorageStrategy } from '../../domain/contracts/IStorageStrategy';
 import { Rating } from '../../domain/entities/Rating';
-
-interface StoredRating {
-  driverId: string;
-  stars: number;
-}
+import {
+  parseFavoriteIds,
+  parseStoredRatings,
+  toDomainRatings,
+  toStoredRatingDtos,
+} from './dtos/StoredRatingDto';
 
 export class AsyncStorageStrategy implements IStorageStrategy {
   private getFavoritesKey(userId: string): string {
@@ -19,7 +20,12 @@ export class AsyncStorageStrategy implements IStorageStrategy {
   async getFavoriteIds(userId: string): Promise<string[]> {
     const rawJson = await AsyncStorage.getItem(this.getFavoritesKey(userId));
     if (!rawJson) return [];
-    return JSON.parse(rawJson);
+
+    try {
+      return parseFavoriteIds(JSON.parse(rawJson)) ?? [];
+    } catch {
+      return [];
+    }
   }
 
   async saveFavoriteIds(userId: string, driverIds: string[]): Promise<void> {
@@ -33,15 +39,16 @@ export class AsyncStorageStrategy implements IStorageStrategy {
     const rawJson = await AsyncStorage.getItem(this.getRatingsKey(userId));
     if (!rawJson) return [];
 
-    const parsed: StoredRating[] = JSON.parse(rawJson);
-    return parsed.map((item) => new Rating(item.driverId, item.stars));
+    try {
+      const dtos = parseStoredRatings(JSON.parse(rawJson));
+      return dtos ? toDomainRatings(dtos) : [];
+    } catch {
+      return [];
+    }
   }
 
   async saveRatings(userId: string, ratings: Rating[]): Promise<void> {
-    const serialized: StoredRating[] = ratings.map((r) => ({
-      driverId: r.driverId,
-      stars: r.stars,
-    }));
+    const serialized = toStoredRatingDtos(ratings);
     await AsyncStorage.setItem(
       this.getRatingsKey(userId),
       JSON.stringify(serialized)

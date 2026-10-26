@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import { IDriverRepository } from '../../domain/contracts/IDriverRepository';
 import { Driver } from '../../domain/entities/Driver';
-import { JolpicaDriverRepository } from '../../infrastructure/api/JolpicaDriverRepository';
+import { driverRepository as defaultRepository } from '../../infrastructure/container';
 
-const driverRepository: IDriverRepository = new JolpicaDriverRepository();
-
-export function useDriverSearch() {
+export function useDriverSearch(
+  repository: IDriverRepository = defaultRepository
+) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Driver[]>([]);
   const [searching, setSearching] = useState(false);
@@ -23,14 +23,14 @@ export function useDriverSearch() {
     setSearching(true);
 
     try {
-      const results = await driverRepository.searchDrivers(trimmed);
+      const results = await repository.searchDrivers(trimmed);
       setSearchResults(results);
     } catch {
       setSearchResults([]);
     } finally {
       setSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, repository]);
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');

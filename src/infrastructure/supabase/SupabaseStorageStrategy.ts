@@ -1,24 +1,31 @@
 import { IStorageStrategy } from '../../domain/contracts/IStorageStrategy';
 import { Rating } from '../../domain/entities/Rating';
 import { AsyncStorageStrategy } from '../storage/AsyncStorageStrategy';
+import {
+  parseFavoriteIds,
+  parseStoredRatings,
+  toDomainRatings,
+  toStoredRatingDtos,
+} from '../storage/dtos/StoredRatingDto';
 import { supabase } from './supabaseClient';
 
-interface StoredRating {
-  driverId: string;
-  stars: number;
-}
-
 export class SupabaseStorageStrategy implements IStorageStrategy {
-  private localCache = new AsyncStorageStrategy();
+  constructor(
+    private readonly localCache: IStorageStrategy = new AsyncStorageStrategy()
+  ) {}
 
   async getFavoriteIds(userId: string): Promise<string[]> {
-    const { data, error } = await supabase.auth.getUser();
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      const cloudIds = !error
+        ? parseFavoriteIds(data.user?.user_metadata?.favoriteIds)
+        : null;
 
-    if (!error && Array.isArray(data.user?.user_metadata?.favoriteIds)) {
-      const cloudIds: string[] = data.user.user_metadata.favoriteIds;
-      await this.localCache.saveFavoriteIds(userId, cloudIds);
-      return cloudIds;
-    }
+      if (cloudIds) {
+        await this.localCache.saveFavoriteIds(userId, cloudIds);
+        return cloudIds;
+      }
+    } catch {}
 
     return this.localCache.getFavoriteIds(userId);
   }
@@ -36,16 +43,18 @@ export class SupabaseStorageStrategy implements IStorageStrategy {
   }
 
   async getRatings(userId: string): Promise<Rating[]> {
-    const { data, error } = await supabase.auth.getUser();
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      const cloudDtos = !error
+        ? parseStoredRatings(data.user?.user_metadata?.ratings)
+        : null;
 
-    if (!error && Array.isArray(data.user?.user_metadata?.ratings)) {
-      const cloudRatings: StoredRating[] = data.user.user_metadata.ratings;
-      const ratings = cloudRatings.map(
-        (item) => new Rating(item.driverId, item.stars)
-      );
-      await this.localCache.saveRatings(userId, ratings);
-      return ratings;
-    }
+      if (cloudDtos) {
+        const ratings = toDomainRatings(cloudDtos);
+        await this.localCache.saveRatings(userId, ratings);
+        return ratings;
+      }
+    } catch {}
 
     return this.localCache.getRatings(userId);
   }
@@ -53,10 +62,7 @@ export class SupabaseStorageStrategy implements IStorageStrategy {
   async saveRatings(userId: string, ratings: Rating[]): Promise<void> {
     await this.localCache.saveRatings(userId, ratings);
 
-    const serialized: StoredRating[] = ratings.map((r) => ({
-      driverId: r.driverId,
-      stars: r.stars,
-    }));
+    const serialized = toStoredRatingDtos(ratings);
 
     const { error } = await supabase.auth.updateUser({
       data: { ratings: serialized },

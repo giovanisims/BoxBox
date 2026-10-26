@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../theme/constants';
+import { COLORS } from './constants';
 
 export const styles = StyleSheet.create({
   headerTitle: {
@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: '#f4f4f6',
+    backgroundColor: COLORS.surface,
   },
   navButtonText: {
     color: COLORS.secondary,

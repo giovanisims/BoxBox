@@ -43,7 +43,10 @@ export class Driver {
     return this.permanentNumber ? `#${this.permanentNumber}` : 'N/A';
   }
 
-  /** RF03: Strips raw HTML tags (<p>, <b>, <i>) and unescapes entities */
+  get displaySummary(): string {
+    return `${this.nationality} • ${this.displayCode}`;
+  }
+
   get cleanBio(): string {
     if (!this.rawHtmlBio) return 'No biography available.';
     return this.rawHtmlBio

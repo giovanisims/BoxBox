@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../theme/constants';
+import { COLORS } from './constants';
 
 export const styles = StyleSheet.create({
   card: {
@@ -11,25 +11,13 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.black,
     shadowOpacity: 0.08,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
   },
   image: {
     width: '100%',
-    aspectRatio: 3 / 4,
-    backgroundColor: '#eeeeee',
-  },
-  placeholder: {
-    backgroundColor: '#333333',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    color: '#bbbbbb',
-    fontSize: 13,
-    fontWeight: '600',
   },
   info: {
     flexDirection: 'row',
@@ -55,10 +43,5 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 1,
   },
 });

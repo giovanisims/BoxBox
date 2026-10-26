@@ -2,12 +2,12 @@ import React, {
   createContext,
   ReactNode,
   useCallback,
-  useEffect,
-  useState,
+  useMemo,
 } from 'react';
-import { IStorageStrategy } from '../../domain/contracts/IStorageStrategy';
-import { SupabaseStorageStrategy } from '../../infrastructure/supabase/SupabaseStorageStrategy';
+import { IFavoritesStorage } from '../../domain/contracts/IStorageStrategy';
+import { storageStrategy as defaultStorageStrategy } from '../../infrastructure/container';
 import { useAuth } from '../hooks/useAuth';
+import { useUserStorage } from '../hooks/useUserStorage';
 
 export interface FavoritesContextData {
   favoriteIds: string[];
@@ -20,29 +20,35 @@ export const FavoritesContext = createContext<FavoritesContextData | undefined>(
   undefined
 );
 
-const storageStrategy: IStorageStrategy = new SupabaseStorageStrategy();
+interface FavoritesProviderProps {
+  children: ReactNode;
+  storageStrategy?: IFavoritesStorage;
+}
 
-export function FavoritesProvider({ children }: { children: ReactNode }) {
+const NO_FAVORITES: string[] = [];
+
+export function FavoritesProvider({
+  children,
+  storageStrategy = defaultStorageStrategy,
+}: FavoritesProviderProps) {
   const { session } = useAuth();
   const userId = session?.user.id;
 
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const loadFavorites = useCallback(
+    (uid: string) => storageStrategy.getFavoriteIds(uid),
+    [storageStrategy]
+  );
 
-  useEffect(() => {
-    if (!userId) {
-      setFavoriteIds([]);
-      setLoading(false);
-      return;
-    }
+  const saveFavorites = useCallback(
+    (uid: string, ids: string[]) => storageStrategy.saveFavoriteIds(uid, ids),
+    [storageStrategy]
+  );
 
-    setLoading(true);
-    storageStrategy
-      .getFavoriteIds(userId)
-      .then((ids) => setFavoriteIds(ids))
-      .catch(() => setFavoriteIds([]))
-      .finally(() => setLoading(false));
-  }, [userId]);
+  const {
+    value: favoriteIds,
+    loading,
+    persist,
+  } = useUserStorage(userId, loadFavorites, saveFavorites, NO_FAVORITES);
 
   const isFavorite = useCallback(
     (driverId: string): boolean => {
@@ -53,27 +59,27 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const toggleFavorite = useCallback(
     async (driverId: string): Promise<void> => {
-      if (!userId) return;
-
       const updatedIds = favoriteIds.includes(driverId)
         ? favoriteIds.filter((id) => id !== driverId)
         : [...favoriteIds, driverId];
 
-      setFavoriteIds(updatedIds);
-      await storageStrategy.saveFavoriteIds(userId, updatedIds);
+      await persist(updatedIds);
     },
-    [userId, favoriteIds]
+    [favoriteIds, persist]
+  );
+
+  const value = useMemo(
+    () => ({
+      favoriteIds,
+      loading,
+      isFavorite,
+      toggleFavorite,
+    }),
+    [favoriteIds, loading, isFavorite, toggleFavorite]
   );
 
   return (
-    <FavoritesContext.Provider
-      value={{
-        favoriteIds,
-        loading,
-        isFavorite,
-        toggleFavorite,
-      }}
-    >
+    <FavoritesContext.Provider value={value}>
       {children}
     </FavoritesContext.Provider>
   );

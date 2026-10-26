@@ -13,9 +13,4 @@ export class User {
     this.id = id.trim();
     this.email = email.toLowerCase().trim();
   }
-
-  get displayName(): string {
-    return this.email.split('@')[0];
-  }
 }
-

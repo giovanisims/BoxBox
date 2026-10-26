@@ -8,8 +8,38 @@ import {
 import { useAuth } from '../../application/hooks/useAuth';
 import { useDriverSearch } from '../../application/hooks/useDriverSearch';
 import { styles } from '../styles/Header';
-import { COLORS, HIT_SLOP } from '../theme/constants';
+import { COLORS, HIT_SLOP } from '../styles/constants';
 import { SearchBar } from './SearchBar';
+
+interface HeaderNavButtonProps {
+  iconName: React.ComponentProps<typeof Ionicons>['name'];
+  iconColor: string;
+  label: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+}
+
+function HeaderNavButton({
+  iconName,
+  iconColor,
+  label,
+  accessibilityLabel,
+  onPress,
+}: HeaderNavButtonProps) {
+  return (
+    <TouchableOpacity
+      style={styles.navButton}
+      onPress={onPress}
+      hitSlop={HIT_SLOP}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+    >
+      <Ionicons name={iconName} size={16} color={iconColor} />
+      <Text style={styles.navButtonText}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
 
 export function AppHeader({ navigation, back }: NativeStackHeaderProps) {
   const { signOut } = useAuth();
@@ -69,29 +99,21 @@ export function AppHeader({ navigation, back }: NativeStackHeaderProps) {
       />
 
       <View style={styles.rightContainer}>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => navigation.navigate('Favorites')}
-          hitSlop={HIT_SLOP}
-          accessible={true}
-          accessibilityRole="button"
+        <HeaderNavButton
+          iconName="heart"
+          iconColor={COLORS.primary}
+          label="Favorites"
           accessibilityLabel="Go to favorites"
-        >
-          <Ionicons name="heart" size={16} color={COLORS.primary} />
-          <Text style={styles.navButtonText}>Favorites</Text>
-        </TouchableOpacity>
+          onPress={() => navigation.navigate('Favorites')}
+        />
 
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => navigation.navigate('Watched')}
-          hitSlop={HIT_SLOP}
-          accessible={true}
-          accessibilityRole="button"
+        <HeaderNavButton
+          iconName="star"
+          iconColor={COLORS.star}
+          label="Watched"
           accessibilityLabel="Go to watched drivers"
-        >
-          <Ionicons name="star" size={16} color="#f4a261" />
-          <Text style={styles.navButtonText}>Watched</Text>
-        </TouchableOpacity>
+          onPress={() => navigation.navigate('Watched')}
+        />
 
         <TouchableOpacity
           style={styles.logoutButton}

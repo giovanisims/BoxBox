@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Driver } from '../../domain/entities/Driver';
 import { styles } from '../styles/SearchBar';
-import { COLORS, HIT_SLOP } from '../theme/constants';
+import { COLORS, HIT_SLOP } from '../styles/constants';
 
 interface SearchBarProps {
   value: string;
@@ -76,7 +76,7 @@ export function SearchBar({
           accessibilityRole="button"
           accessibilityLabel="Search drivers"
         >
-          <Text style={styles.searchButtonText}>Buscar</Text>
+          <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
       </View>
 
@@ -119,14 +119,18 @@ export function SearchBar({
                         styles.dropdownAvatarPlaceholder,
                       ]}
                     >
-                      <Ionicons name="person" size={18} color="#bbbbbb" />
+                      <Ionicons
+                        name="person"
+                        size={18}
+                        color={COLORS.placeholderText}
+                      />
                     </View>
                   )}
 
                   <View style={styles.dropdownItemInfo}>
                     <Text style={styles.dropdownItemName}>{item.name}</Text>
                     <Text style={styles.dropdownItemMeta}>
-                      {item.nationality} • {item.displayCode}
+                      {item.displaySummary}
                     </Text>
                   </View>
 
@@ -140,7 +144,7 @@ export function SearchBar({
               ListEmptyComponent={
                 <View style={styles.dropdownEmpty}>
                   <Text style={styles.dropdownEmptyText}>
-                    No drivers found matching "{value}".
+                    {`No drivers found matching "${value}".`}
                   </Text>
                 </View>
               }

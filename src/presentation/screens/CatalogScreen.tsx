@@ -5,21 +5,21 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   RefreshControl,
-  Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCatalog } from '../../application/hooks/useCatalog';
+import {
+  SCROLL_THRESHOLD_PX,
+  useCatalog,
+} from '../../application/hooks/useCatalog';
+import { ErrorState } from '../components/ErrorState';
 import { ItemCard } from '../components/ItemCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import { styles } from '../styles/CatalogScreen';
-import { COLORS, HIT_SLOP } from '../theme/constants';
+import { COLORS, GRID_COLUMNS } from '../styles/constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Catalog'>;
-
-const NUM_COLUMNS = 4;
 
 export function CatalogScreen({ navigation }: Props) {
   const {
@@ -38,7 +38,7 @@ export function CatalogScreen({ navigation }: Props) {
     const distanceFromBottom =
       contentSize.height - (layoutMeasurement.height + contentOffset.y);
 
-    if (distanceFromBottom < 400) {
+    if (distanceFromBottom < SCROLL_THRESHOLD_PX) {
       loadMore();
     }
   };
@@ -48,32 +48,16 @@ export function CatalogScreen({ navigation }: Props) {
   }
 
   if (error && drivers.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText} accessibilityRole="alert">
-          {error}
-        </Text>
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={retry}
-          hitSlop={HIT_SLOP}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel="Try again"
-        >
-          <Text style={styles.retryText}>Tentar novamente</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    return <ErrorState message={error} onRetry={retry} />;
   }
 
   return (
     <View style={styles.container}>
       <FlatList
-        key={`catalog-grid-${NUM_COLUMNS}`}
+        key={`catalog-grid-${GRID_COLUMNS}`}
         style={styles.list}
         data={drivers}
-        numColumns={NUM_COLUMNS}
+        numColumns={GRID_COLUMNS}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ItemCard

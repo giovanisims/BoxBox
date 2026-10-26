@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../theme/constants';
+import { COLORS } from './constants';
 
 export const styles = StyleSheet.create({
   wrapper: {
@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#fafafa',
+    backgroundColor: COLORS.inputBackground,
     minHeight: 38,
   },
   input: {
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchButtonText: {
-    color: '#ffffff',
+    color: COLORS.white,
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -59,7 +59,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: COLORS.black,
     shadowOpacity: 0.18,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -90,18 +90,18 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: COLORS.divider,
     minHeight: 54,
   },
   dropdownAvatar: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#eeeeee',
+    backgroundColor: COLORS.skeletonBackground,
     marginRight: 10,
   },
   dropdownAvatarPlaceholder: {
-    backgroundColor: '#333333',
+    backgroundColor: COLORS.placeholderBg,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -1,36 +1,57 @@
 import { useCallback, useEffect, useState } from 'react';
 import { IDriverRepository } from '../../domain/contracts/IDriverRepository';
 import { Driver } from '../../domain/entities/Driver';
-import { JolpicaDriverRepository } from '../../infrastructure/api/JolpicaDriverRepository';
+import { driverRepository as defaultRepository } from '../../infrastructure/container';
 
-const driverRepository: IDriverRepository = new JolpicaDriverRepository();
+interface LoadedDriver {
+  key: string;
+  driver: Driver | null;
+  error: string | null;
+}
 
-export function useDriverDetails(driverId: string) {
-  const [driver, setDriver] = useState<Driver | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useDriverDetails(
+  driverId: string,
+  repository: IDriverRepository = defaultRepository
+) {
+  const [attempt, setAttempt] = useState(0);
+  const [loaded, setLoaded] = useState<LoadedDriver | null>(null);
 
-  const fetchDetails = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await driverRepository.getDriverById(driverId);
-      setDriver(result);
-    } catch {
-      setError('Failed to load driver details. Please check your connection.');
-    } finally {
-      setLoading(false);
-    }
-  }, [driverId]);
+  const requestKey = `${driverId}#${attempt}`;
 
   useEffect(() => {
-    fetchDetails();
-  }, [fetchDetails]);
+    let cancelled = false;
+
+    repository.getDriverById(driverId).then(
+      (result) => {
+        if (!cancelled) {
+          setLoaded({ key: requestKey, driver: result, error: null });
+        }
+      },
+      () => {
+        if (!cancelled) {
+          setLoaded({
+            key: requestKey,
+            driver: null,
+            error:
+              'Failed to load driver details. Please check your connection.',
+          });
+        }
+      }
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [driverId, repository, requestKey]);
+
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+
+  const isCurrent = loaded?.key === requestKey;
 
   return {
-    driver,
-    loading,
-    error,
-    retry: fetchDetails,
+    driver: isCurrent ? loaded.driver : null,
+    loading: !isCurrent,
+    error: isCurrent ? loaded.error : null,
+    retry,
   };
 }

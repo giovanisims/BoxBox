@@ -2,13 +2,13 @@ import React, {
   createContext,
   ReactNode,
   useCallback,
-  useEffect,
-  useState,
+  useMemo,
 } from 'react';
-import { IStorageStrategy } from '../../domain/contracts/IStorageStrategy';
+import { IRatingsStorage } from '../../domain/contracts/IStorageStrategy';
 import { Rating } from '../../domain/entities/Rating';
-import { SupabaseStorageStrategy } from '../../infrastructure/supabase/SupabaseStorageStrategy';
+import { storageStrategy as defaultStorageStrategy } from '../../infrastructure/container';
 import { useAuth } from '../hooks/useAuth';
+import { useUserStorage } from '../hooks/useUserStorage';
 
 export interface WatchedContextData {
   ratings: Rating[];
@@ -23,29 +23,35 @@ export const WatchedContext = createContext<WatchedContextData | undefined>(
   undefined
 );
 
-const storageStrategy: IStorageStrategy = new SupabaseStorageStrategy();
+interface WatchedProviderProps {
+  children: ReactNode;
+  storageStrategy?: IRatingsStorage;
+}
 
-export function WatchedProvider({ children }: { children: ReactNode }) {
+const NO_RATINGS: Rating[] = [];
+
+export function WatchedProvider({
+  children,
+  storageStrategy = defaultStorageStrategy,
+}: WatchedProviderProps) {
   const { session } = useAuth();
   const userId = session?.user.id;
 
-  const [ratings, setRatings] = useState<Rating[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const loadRatings = useCallback(
+    (uid: string) => storageStrategy.getRatings(uid),
+    [storageStrategy]
+  );
 
-  useEffect(() => {
-    if (!userId) {
-      setRatings([]);
-      setLoading(false);
-      return;
-    }
+  const saveRatings = useCallback(
+    (uid: string, items: Rating[]) => storageStrategy.saveRatings(uid, items),
+    [storageStrategy]
+  );
 
-    setLoading(true);
-    storageStrategy
-      .getRatings(userId)
-      .then((loaded) => setRatings(loaded))
-      .catch(() => setRatings([]))
-      .finally(() => setLoading(false));
-  }, [userId]);
+  const {
+    value: ratings,
+    loading,
+    persist,
+  } = useUserStorage(userId, loadRatings, saveRatings, NO_RATINGS);
 
   const getRating = useCallback(
     (driverId: string): Rating | undefined => {
@@ -63,23 +69,18 @@ export function WatchedProvider({ children }: { children: ReactNode }) {
 
   const toggleWatched = useCallback(
     async (driverId: string): Promise<void> => {
-      if (!userId) return;
-
       const exists = ratings.some((r) => r.driverId === driverId);
       const updated = exists
         ? ratings.filter((r) => r.driverId !== driverId)
         : [...ratings, new Rating(driverId, 0)];
 
-      setRatings(updated);
-      await storageStrategy.saveRatings(userId, updated);
+      await persist(updated);
     },
-    [userId, ratings]
+    [ratings, persist]
   );
 
   const rateDriver = useCallback(
     async (driverId: string, stars: number): Promise<void> => {
-      if (!userId) return;
-
       const newRating = new Rating(driverId, stars);
       const exists = ratings.some((r) => r.driverId === driverId);
 
@@ -87,24 +88,24 @@ export function WatchedProvider({ children }: { children: ReactNode }) {
         ? ratings.map((r) => (r.driverId === driverId ? newRating : r))
         : [...ratings, newRating];
 
-      setRatings(updated);
-      await storageStrategy.saveRatings(userId, updated);
+      await persist(updated);
     },
-    [userId, ratings]
+    [ratings, persist]
+  );
+
+  const value = useMemo(
+    () => ({
+      ratings,
+      loading,
+      isWatched,
+      getRating,
+      toggleWatched,
+      rateDriver,
+    }),
+    [ratings, loading, isWatched, getRating, toggleWatched, rateDriver]
   );
 
   return (
-    <WatchedContext.Provider
-      value={{
-        ratings,
-        loading,
-        isWatched,
-        getRating,
-        toggleWatched,
-        rateDriver,
-      }}
-    >
-      {children}
-    </WatchedContext.Provider>
+    <WatchedContext.Provider value={value}>{children}</WatchedContext.Provider>
   );
 }

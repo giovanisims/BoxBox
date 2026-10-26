@@ -1,80 +1,74 @@
 import axios from 'axios';
 import { IDriverRepository } from '../../domain/contracts/IDriverRepository';
 import { Driver } from '../../domain/entities/Driver';
-import { JolpicaDriverDto } from './dtos/JolpicaDriverDto';
-import { WikiSummaryDto } from './dtos/WikiSummaryDto';
+import {
+  JolpicaDriverDto,
+  JolpicaResponseDto,
+} from './dtos/JolpicaDriverDto';
+import { DriverMapper } from './mappers/DriverMapper';
+import { IWikipediaClient, WikipediaClient } from './WikipediaClient';
 
 const JOLPICA_BASE_URL = 'https://api.jolpi.ca/ergast/f1';
-const WIKI_SUMMARY_URL = 'https://en.wikipedia.org/api/rest_v1/page/summary';
 const MAX_SEARCH_RESULTS = 15;
 const JOLPICA_MAX_PAGE_LIMIT = 100;
+const BATCH_CONCURRENCY = 3;
+
+interface JolpicaPage {
+  total: number;
+  drivers: JolpicaDriverDto[];
+}
 
 export class JolpicaDriverRepository implements IDriverRepository {
-  private static allDriversCache: JolpicaDriverDto[] | null = null;
+  private allDriversCache: JolpicaDriverDto[] | null = null;
 
-  private extractWikiSlug(wikiUrl?: string): string {
-    if (!wikiUrl) return '';
-    return wikiUrl.split('/').pop() || '';
-  }
+  constructor(
+    private readonly wikiClient: IWikipediaClient = new WikipediaClient()
+  ) {}
 
-  private normalizeText(text: string): string {
-    return text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
-  }
-
-  private async fetchWikiSummary(wikiSlug: string): Promise<WikiSummaryDto | null> {
-    if (!wikiSlug) return null;
-    try {
-      const response = await axios.get<WikiSummaryDto>(
-        `${WIKI_SUMMARY_URL}/${wikiSlug}`
-      );
-      return response.data;
-    } catch {
-      return null;
-    }
-  }
-
-  private mapDriver(
+  private async enrichDriver(
     rawDriver: JolpicaDriverDto,
-    wikiSummary: WikiSummaryDto | null,
     useLargeImage = false
-  ): Driver {
-    const fullName = `${rawDriver.givenName} ${rawDriver.familyName}`;
-    const imageUrl = useLargeImage
-      ? wikiSummary?.originalimage?.source || wikiSummary?.thumbnail?.source || null
-      : wikiSummary?.thumbnail?.source || null;
-    const rawHtmlBio = wikiSummary?.extract_html || wikiSummary?.extract || '';
+  ): Promise<Driver> {
+    const wikiSlug = DriverMapper.extractWikiSlug(rawDriver.url);
+    const wikiSummary = await this.wikiClient.fetchSummary(wikiSlug);
+    return DriverMapper.toDomain(rawDriver, wikiSummary, useLargeImage);
+  }
 
-    return new Driver(
-      rawDriver.driverId,
-      fullName,
-      rawDriver.nationality,
-      imageUrl,
-      rawDriver.code,
-      rawDriver.permanentNumber,
-      rawDriver.dateOfBirth,
-      rawHtmlBio
+  private async enrichDrivers(
+    rawDrivers: JolpicaDriverDto[]
+  ): Promise<Driver[]> {
+    return Promise.all(
+      rawDrivers.map((rawDriver) => this.enrichDriver(rawDriver, false))
     );
   }
 
+  private async fetchJolpica(
+    path: string,
+    params?: Record<string, number>
+  ): Promise<JolpicaPage> {
+    const response = await axios.get<JolpicaResponseDto>(
+      `${JOLPICA_BASE_URL}${path}`,
+      { params }
+    );
+    return {
+      total: Number(response.data?.MRData?.total ?? 0),
+      drivers: response.data?.MRData?.DriverTable?.Drivers ?? [],
+    };
+  }
+
+  private fetchDriversPage(limit: number, offset: number): Promise<JolpicaPage> {
+    return this.fetchJolpica('/drivers.json', { limit, offset });
+  }
+
   private async fetchAllRawDrivers(): Promise<JolpicaDriverDto[]> {
-    if (
-      JolpicaDriverRepository.allDriversCache &&
-      JolpicaDriverRepository.allDriversCache.length > 0
-    ) {
-      return JolpicaDriverRepository.allDriversCache;
+    if (this.allDriversCache && this.allDriversCache.length > 0) {
+      return this.allDriversCache;
     }
 
-    const firstResponse = await axios.get(`${JOLPICA_BASE_URL}/drivers.json`, {
-      params: { limit: JOLPICA_MAX_PAGE_LIMIT, offset: 0 },
-    });
-
-    const total = Number(firstResponse.data?.MRData?.total || 0);
-    const firstBatch: JolpicaDriverDto[] =
-      firstResponse.data?.MRData?.DriverTable?.Drivers || [];
+    const { total, drivers: firstBatch } = await this.fetchDriversPage(
+      JOLPICA_MAX_PAGE_LIMIT,
+      0
+    );
 
     const allDrivers: JolpicaDriverDto[] = [...firstBatch];
     const remainingOffsets: number[] = [];
@@ -87,91 +81,53 @@ export class JolpicaDriverRepository implements IDriverRepository {
       remainingOffsets.push(offset);
     }
 
-    const batchSize = 3;
-    for (let i = 0; i < remainingOffsets.length; i += batchSize) {
-      const chunk = remainingOffsets.slice(i, i + batchSize);
-      const responses = await Promise.all(
+    for (let i = 0; i < remainingOffsets.length; i += BATCH_CONCURRENCY) {
+      const chunk = remainingOffsets.slice(i, i + BATCH_CONCURRENCY);
+      const pages = await Promise.all(
         chunk.map((offset) =>
-          axios.get(`${JOLPICA_BASE_URL}/drivers.json`, {
-            params: { limit: JOLPICA_MAX_PAGE_LIMIT, offset },
-          })
+          this.fetchDriversPage(JOLPICA_MAX_PAGE_LIMIT, offset)
         )
       );
 
-      for (const res of responses) {
-        const pageDrivers: JolpicaDriverDto[] =
-          res.data?.MRData?.DriverTable?.Drivers || [];
-        allDrivers.push(...pageDrivers);
+      for (const page of pages) {
+        allDrivers.push(...page.drivers);
       }
     }
 
-    JolpicaDriverRepository.allDriversCache = allDrivers;
+    this.allDriversCache = allDrivers;
     return allDrivers;
   }
 
   async getDrivers(offset = 0, limit = 20): Promise<Driver[]> {
-    const response = await axios.get(`${JOLPICA_BASE_URL}/drivers.json`, {
-      params: { limit, offset },
-    });
-
-    const rawDrivers: JolpicaDriverDto[] =
-      response.data?.MRData?.DriverTable?.Drivers || [];
-
-    return Promise.all(
-      rawDrivers.map(async (rawDriver) => {
-        const wikiSlug = this.extractWikiSlug(rawDriver.url);
-        const wikiSummary = await this.fetchWikiSummary(wikiSlug);
-        return this.mapDriver(rawDriver, wikiSummary, false);
-      })
-    );
+    const { drivers: rawDrivers } = await this.fetchDriversPage(limit, offset);
+    return this.enrichDrivers(rawDrivers);
   }
 
   async getDriverById(driverId: string): Promise<Driver> {
-    const response = await axios.get(
-      `${JOLPICA_BASE_URL}/drivers/${driverId}.json`
+    const { drivers } = await this.fetchJolpica(
+      `/drivers/${encodeURIComponent(driverId)}.json`
     );
-
-    const rawDriver: JolpicaDriverDto | undefined =
-      response.data?.MRData?.DriverTable?.Drivers?.[0];
+    const rawDriver: JolpicaDriverDto | undefined = drivers[0];
 
     if (!rawDriver) {
       throw new Error(`Driver with ID "${driverId}" not found.`);
     }
 
-    const wikiSlug = this.extractWikiSlug(rawDriver.url);
-    const wikiSummary = await this.fetchWikiSummary(wikiSlug);
-
-    return this.mapDriver(rawDriver, wikiSummary, true);
+    return this.enrichDriver(rawDriver, true);
   }
 
   async searchDrivers(query: string): Promise<Driver[]> {
-    const normalizedQuery = this.normalizeText(query);
+    const normalizedQuery = DriverMapper.normalizeText(query);
     if (!normalizedQuery) return [];
 
     const allDrivers = await this.fetchAllRawDrivers();
 
     const matches = allDrivers
-      .filter((rawDriver) => {
-        const fullName = this.normalizeText(
-          `${rawDriver.givenName} ${rawDriver.familyName}`
-        );
-        const driverId = this.normalizeText(rawDriver.driverId);
-        const code = rawDriver.code ? this.normalizeText(rawDriver.code) : '';
-
-        return (
-          fullName.includes(normalizedQuery) ||
-          driverId.includes(normalizedQuery) ||
-          code.includes(normalizedQuery)
-        );
-      })
+      .filter((rawDriver) =>
+        DriverMapper.matchesQuery(rawDriver, normalizedQuery)
+      )
       .slice(0, MAX_SEARCH_RESULTS);
 
-    return Promise.all(
-      matches.map(async (rawDriver) => {
-        const wikiSlug = this.extractWikiSlug(rawDriver.url);
-        const wikiSummary = await this.fetchWikiSummary(wikiSlug);
-        return this.mapDriver(rawDriver, wikiSummary, false);
-      })
-    );
+    return this.enrichDrivers(matches);
   }
 }

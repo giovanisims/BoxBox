@@ -10,15 +10,7 @@ import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { SignUpScreen } from '../screens/SignUpScreen';
 import { WatchedScreen } from '../screens/WatchedScreen';
-
-export type RootStackParamList = {
-  Login: { infoMessage?: string } | undefined;
-  SignUp: undefined;
-  Catalog: undefined;
-  Details: { id: string };
-  Favorites: undefined;
-  Watched: undefined;
-};
+import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

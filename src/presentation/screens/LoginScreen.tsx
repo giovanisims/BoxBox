@@ -1,28 +1,24 @@
-import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuth } from '../../application/hooks/useAuth';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { HIT_SLOP } from '../theme/constants';
-import { styles } from '../styles/AuthScreens';
+import { useAuthForm } from '../../application/hooks/useAuthForm';
+import { AuthForm } from '../components/AuthForm';
+import { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation, route }: Props) {
   const { signIn } = useAuth();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const infoMessage = route.params?.infoMessage;
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    error,
+    setError,
+    runAuthAction,
+  } = useAuthForm('Sign in failed.');
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) {
@@ -30,84 +26,28 @@ export function LoginScreen({ navigation, route }: Props) {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
+    await runAuthAction(async () => {
       await signIn(email.trim(), password);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign in failed.');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
-
-      {error && (
-        <Text style={styles.errorText} accessibilityRole="alert">
-          {error}
-        </Text>
-      )}
-
-      {!error && infoMessage && (
-        <Text style={styles.infoText} accessibilityRole="alert">
-          {infoMessage}
-        </Text>
-      )}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        accessible={true}
-        accessibilityLabel="Email address"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        accessible={true}
-        accessibilityLabel="Password"
-      />
-
-      <TouchableOpacity
-        style={[styles.primaryButton, loading && styles.disabledButton]}
-        onPress={handleSignIn}
-        disabled={loading}
-        hitSlop={HIT_SLOP}
-        accessible={true}
-        accessibilityRole="button"
-        accessibilityLabel="Sign in"
-        accessibilityState={{ disabled: loading }}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" accessibilityLabel="Signing in" />
-        ) : (
-          <Text style={styles.primaryButtonText}>Sign In</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.switchButton}
-        onPress={() => navigation.navigate('SignUp')}
-        hitSlop={HIT_SLOP}
-        accessible={true}
-        accessibilityRole="button"
-        accessibilityLabel="Go to create account screen"
-      >
-        <Text style={styles.switchButtonText}>
-          Don't have an account? Sign Up
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <AuthForm
+      subtitle="Sign in to continue"
+      email={email}
+      onEmailChange={setEmail}
+      password={password}
+      onPasswordChange={setPassword}
+      error={error}
+      infoMessage={route.params?.infoMessage}
+      loading={loading}
+      submitLabel="Sign In"
+      submitAccessibilityLabel="Sign in"
+      loadingAccessibilityLabel="Signing in"
+      onSubmit={handleSignIn}
+      switchLabel="Don't have an account? Sign Up"
+      switchAccessibilityLabel="Go to create account screen"
+      onSwitch={() => navigation.navigate('SignUp')}
+    />
   );
 }

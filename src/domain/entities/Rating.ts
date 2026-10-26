@@ -1,25 +1,25 @@
 export class Rating {
+  static readonly MIN_STARS = 0;
+  static readonly MAX_STARS = 5;
+
   readonly driverId: string;
   readonly stars: number;
 
-  constructor(driverId: string, stars = 0) {
+  constructor(driverId: string, stars = Rating.MIN_STARS) {
     if (!driverId || driverId.trim().length === 0) {
       throw new Error('Driver ID cannot be empty');
     }
-    if (!Number.isInteger(stars) || stars < 0 || stars > 5) {
-      throw new Error('Rating must be an integer between 0 and 5');
+    if (
+      !Number.isInteger(stars) ||
+      stars < Rating.MIN_STARS ||
+      stars > Rating.MAX_STARS
+    ) {
+      throw new Error(
+        `Rating must be an integer between ${Rating.MIN_STARS} and ${Rating.MAX_STARS}`
+      );
     }
 
     this.driverId = driverId.trim();
     this.stars = stars;
-  }
-
-  get isRated(): boolean {
-    return this.stars >= 1 && this.stars <= 5;
-  }
-
-  get displayStars(): string {
-    if (!this.isRated) return 'No rating yet';
-    return '★'.repeat(this.stars) + '☆'.repeat(5 - this.stars);
   }
 }

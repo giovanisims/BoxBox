@@ -1,18 +1,18 @@
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFavorites } from '../../application/hooks/useFavorites';
 import { useWatched } from '../../application/hooks/useWatched';
 import { Driver } from '../../domain/entities/Driver';
 import { styles } from '../styles/ItemCard';
-import { COLORS, HIT_SLOP } from '../theme/constants';
+import { COLORS, HIT_SLOP } from '../styles/constants';
+import { DriverPhoto } from './DriverPhoto';
+import { StarRating } from './StarRating';
 
 interface ItemCardProps {
   driver: Driver;
   onPress: () => void;
 }
-
-const STARS = [1, 2, 3, 4, 5];
 
 export function ItemCard({ driver, onPress }: ItemCardProps) {
   const { isFavorite } = useFavorites();
@@ -30,20 +30,11 @@ export function ItemCard({ driver, onPress }: ItemCardProps) {
       accessibilityRole="button"
       accessibilityLabel={`View details for ${driver.name}`}
     >
-      {driver.imageUrl ? (
-        <Image
-          source={{ uri: driver.imageUrl }}
-          style={styles.image}
-          resizeMode="cover"
-          accessible={true}
-          accessibilityRole="image"
-          accessibilityLabel={`Photo of ${driver.name}`}
-        />
-      ) : (
-        <View style={[styles.image, styles.placeholder]}>
-          <Text style={styles.placeholderText}>No Photo</Text>
-        </View>
-      )}
+      <DriverPhoto
+        imageUrl={driver.imageUrl}
+        driverName={driver.name}
+        style={styles.image}
+      />
 
       <View style={styles.info}>
         <View style={styles.textContainer}>
@@ -51,25 +42,12 @@ export function ItemCard({ driver, onPress }: ItemCardProps) {
             {driver.name}
           </Text>
           <Text style={styles.meta} numberOfLines={1}>
-            {driver.nationality} • {driver.displayCode}
+            {driver.displaySummary}
           </Text>
         </View>
 
         <View style={styles.indicatorsContainer}>
-          <View
-            style={styles.starsRow}
-            accessible={true}
-            accessibilityLabel={`Rated ${currentStars} out of 5 stars`}
-          >
-            {STARS.map((star) => (
-              <Ionicons
-                key={star}
-                name={star <= currentStars ? 'star' : 'star-outline'}
-                size={14}
-                color={star <= currentStars ? '#f4a261' : '#cccccc'}
-              />
-            ))}
-          </View>
+          <StarRating rating={currentStars} size={14} />
 
           <Ionicons
             name={favorited ? 'heart' : 'heart-outline'}

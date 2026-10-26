@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../theme/constants';
+import { COLORS } from './constants';
 
 export const styles = StyleSheet.create({
   scrollContainer: {
@@ -14,21 +14,9 @@ export const styles = StyleSheet.create({
   },
   image: {
     width: 260,
-    aspectRatio: 3 / 4,
     borderRadius: 12,
-    backgroundColor: '#eeeeee',
     alignSelf: 'center',
     marginBottom: 20,
-  },
-  placeholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#333333',
-  },
-  placeholderText: {
-    color: '#bbbbbb',
-    fontSize: 14,
-    fontWeight: '600',
   },
   title: {
     fontSize: 28,
@@ -73,7 +61,7 @@ export const styles = StyleSheet.create({
     color: COLORS.secondary,
   },
   actionButtonTextActive: {
-    color: '#ffffff',
+    color: COLORS.white,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -88,10 +76,6 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginRight: 8,
   },
-  starButton: {
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-  },
   metaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -100,7 +84,7 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
   },
   badge: {
-    backgroundColor: '#f4f4f6',
+    backgroundColor: COLORS.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -122,31 +106,5 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: COLORS.textPrimary,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: COLORS.background,
-  },
-  errorText: {
-    fontSize: 16,
-    color: COLORS.errorText,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: COLORS.secondary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  retryText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 15,
   },
 });
