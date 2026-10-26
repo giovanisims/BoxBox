@@ -9,15 +9,19 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCatalog } from '../../application/hooks/useCatalog';
 import { ItemCard } from '../components/ItemCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { COLORS, HIT_SLOP } from '../theme/constants';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import { styles } from '../styles/CatalogScreen';
+import { COLORS, HIT_SLOP } from '../theme/constants';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'Catalog'>;
 
 const NUM_COLUMNS = 4;
 
-export function CatalogScreen() {
+export function CatalogScreen({ navigation }: Props) {
   const {
     drivers,
     loading,
@@ -74,9 +78,7 @@ export function CatalogScreen() {
         renderItem={({ item }) => (
           <ItemCard
             driver={item}
-            onPress={() => {
-              // TODO: Navigate to details screen
-            }}
+            onPress={() => navigation.navigate('Details', { id: item.id })}
           />
         )}
         onScroll={handleScroll}

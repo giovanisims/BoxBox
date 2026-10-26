@@ -5,6 +5,7 @@ import { useAuth } from '../../application/hooks/useAuth';
 import { defaultHeaderOptions, HeaderRight } from '../components/Header';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { CatalogScreen } from '../screens/CatalogScreen';
+import { DetailsScreen } from '../screens/DetailsScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { SignUpScreen } from '../screens/SignUpScreen';
 
@@ -12,6 +13,7 @@ export type RootStackParamList = {
   Login: { infoMessage?: string } | undefined;
   SignUp: undefined;
   Catalog: undefined;
+  Details: { id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -27,13 +29,22 @@ export function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={defaultHeaderOptions}>
         {session?.isAuthenticated ? (
-          <Stack.Screen
-            name="Catalog"
-            component={CatalogScreen}
-            options={{
-              headerRight: () => <HeaderRight />,
-            }}
-          />
+          <>
+            <Stack.Screen
+              name="Catalog"
+              component={CatalogScreen}
+              options={{
+                headerRight: () => <HeaderRight />,
+              }}
+            />
+            <Stack.Screen
+              name="Details"
+              component={DetailsScreen}
+              options={{
+                headerRight: () => <HeaderRight />,
+              }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
