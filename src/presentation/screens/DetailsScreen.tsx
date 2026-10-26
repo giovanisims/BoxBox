@@ -6,18 +6,29 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDriverDetails } from '../../application/hooks/useDriverDetails';
+import { useFavorites } from '../../application/hooks/useFavorites';
+import { useWatched } from '../../application/hooks/useWatched';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { styles } from '../styles/DetailsScreen';
-import { HIT_SLOP } from '../theme/constants';
+import { COLORS, HIT_SLOP } from '../theme/constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Details'>;
+
+const STARS = [1, 2, 3, 4, 5];
 
 export function DetailsScreen({ route }: Props) {
   const { id } = route.params;
   const { driver, loading, error, retry } = useDriverDetails(id);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isWatched, getRating, toggleWatched, rateDriver } = useWatched();
+
+  const favorited = isFavorite(id);
+  const watched = isWatched(id);
+  const currentStars = getRating(id)?.stars ?? 0;
 
   if (loading) {
     return <LoadingSpinner message="Loading driver details..." />;
@@ -64,6 +75,91 @@ export function DetailsScreen({ route }: Props) {
       )}
 
       <Text style={styles.title}>{driver.name}</Text>
+
+      <View style={styles.actionsRow}>
+        <TouchableOpacity
+          style={[styles.actionButton, favorited && styles.actionButtonActive]}
+          onPress={() => toggleFavorite(driver.id)}
+          hitSlop={HIT_SLOP}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={
+            favorited
+              ? `Remove ${driver.name} from favorites`
+              : `Add ${driver.name} to favorites`
+          }
+          accessibilityState={{ selected: favorited }}
+        >
+          <Ionicons
+            name={favorited ? 'heart' : 'heart-outline'}
+            size={18}
+            color={favorited ? '#ffffff' : COLORS.primary}
+          />
+          <Text
+            style={[
+              styles.actionButtonText,
+              favorited && styles.actionButtonTextActive,
+            ]}
+          >
+            {favorited ? 'Favorited' : 'Add to Favorites'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.actionButton,
+            styles.watchedButton,
+            watched && styles.watchedButtonActive,
+          ]}
+          onPress={() => toggleWatched(driver.id)}
+          hitSlop={HIT_SLOP}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={
+            watched
+              ? `Unmark ${driver.name} as watched race`
+              : `Mark ${driver.name} as watched race`
+          }
+          accessibilityState={{ selected: watched }}
+        >
+          <Ionicons
+            name={watched ? 'checkmark-circle' : 'add-circle-outline'}
+            size={18}
+            color={watched ? '#ffffff' : COLORS.secondary}
+          />
+          <Text
+            style={[
+              styles.actionButtonText,
+              styles.watchedButtonText,
+              watched && styles.actionButtonTextActive,
+            ]}
+          >
+            {watched ? 'Watched Race' : 'Mark Watched Race'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingLabel}>Rate Driver (1–5):</Text>
+        {STARS.map((star) => (
+          <TouchableOpacity
+            key={star}
+            style={styles.starButton}
+            onPress={() => rateDriver(driver.id, star)}
+            hitSlop={HIT_SLOP}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={`Rate ${star} stars`}
+            accessibilityState={{ selected: currentStars === star }}
+          >
+            <Ionicons
+              name={star <= currentStars ? 'star' : 'star-outline'}
+              size={26}
+              color={star <= currentStars ? '#f4a261' : '#cccccc'}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <View style={styles.metaRow}>
         <View style={styles.badge}>

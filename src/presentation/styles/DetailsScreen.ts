@@ -35,7 +35,62 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 14,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    minHeight: 44,
+  },
+  actionButtonActive: {
+    backgroundColor: COLORS.primary,
+  },
+  watchedButton: {
+    borderColor: COLORS.secondary,
+  },
+  watchedButtonActive: {
+    backgroundColor: COLORS.secondary,
+  },
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  watchedButtonText: {
+    color: COLORS.secondary,
+  },
+  actionButtonTextActive: {
+    color: '#ffffff',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    gap: 4,
+  },
+  ratingLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginRight: 8,
+  },
+  starButton: {
+    paddingHorizontal: 4,
+    paddingVertical: 4,
   },
   metaRow: {
     flexDirection: 'row',

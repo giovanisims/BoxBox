@@ -6,14 +6,18 @@ import { defaultHeaderOptions, HeaderRight } from '../components/Header';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { CatalogScreen } from '../screens/CatalogScreen';
 import { DetailsScreen } from '../screens/DetailsScreen';
+import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { SignUpScreen } from '../screens/SignUpScreen';
+import { WatchedScreen } from '../screens/WatchedScreen';
 
 export type RootStackParamList = {
   Login: { infoMessage?: string } | undefined;
   SignUp: undefined;
   Catalog: undefined;
   Details: { id: string };
+  Favorites: undefined;
+  Watched: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +44,20 @@ export function AppNavigator() {
             <Stack.Screen
               name="Details"
               component={DetailsScreen}
+              options={{
+                headerRight: () => <HeaderRight />,
+              }}
+            />
+            <Stack.Screen
+              name="Favorites"
+              component={FavoritesScreen}
+              options={{
+                headerRight: () => <HeaderRight />,
+              }}
+            />
+            <Stack.Screen
+              name="Watched"
+              component={WatchedScreen}
               options={{
                 headerRight: () => <HeaderRight />,
               }}

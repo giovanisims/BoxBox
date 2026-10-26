@@ -10,7 +10,22 @@ export const styles = StyleSheet.create({
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
     marginRight: 16,
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#f4f4f6',
+  },
+  navButtonText: {
+    color: COLORS.secondary,
+    fontWeight: '600',
+    fontSize: 14,
   },
   logoutButton: {
     paddingHorizontal: 8,

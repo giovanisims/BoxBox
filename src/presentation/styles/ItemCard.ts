@@ -32,7 +32,14 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   info: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
+  },
+  textContainer: {
+    flex: 1,
+    marginRight: 8,
   },
   name: {
     fontSize: 15,
@@ -43,5 +50,15 @@ export const styles = StyleSheet.create({
   meta: {
     fontSize: 12,
     color: COLORS.textSecondary,
+  },
+  indicatorsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 1,
   },
 });
