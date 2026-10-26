@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -10,7 +9,8 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuth } from '../../application/hooks/useAuth';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { COLORS, HIT_SLOP } from '../theme/constants';
+import { HIT_SLOP } from '../theme/constants';
+import { styles } from '../styles/AuthScreens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
@@ -58,7 +58,6 @@ export function SignUpScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>BoxBox F1</Text>
       <Text style={styles.subtitle}>Create your account</Text>
 
       {error && (
@@ -133,69 +132,3 @@ export function SignUpScreen({ navigation }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: COLORS.background,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  primaryButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  switchButton: {
-    marginTop: 16,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  switchButtonText: {
-    color: COLORS.secondary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  errorText: {
-    color: COLORS.errorText,
-    backgroundColor: COLORS.errorBackground,
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-});

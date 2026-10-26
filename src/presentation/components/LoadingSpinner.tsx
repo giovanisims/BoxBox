@@ -1,6 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { COLORS } from '../theme/constants';
+import { styles } from '../styles/LoadingSpinner';
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -18,18 +19,3 @@ export function LoadingSpinner({ message = 'Loading...' }: LoadingSpinnerProps) 
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: COLORS.background,
-  },
-  message: {
-    marginTop: 12,
-    fontSize: 15,
-    color: COLORS.textSecondary,
-  },
-});
